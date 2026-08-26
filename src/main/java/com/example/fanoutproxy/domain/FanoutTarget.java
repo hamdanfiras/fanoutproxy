@@ -13,26 +13,27 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@Table(name = "fanout_target")
+@Table(name = "FANOUT_TARGET")
 public class FanoutTarget {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "rule_id", nullable = false)
+    @JoinColumn(name = "RULE_ID", nullable = false)
     private FanoutRule rule;
 
     @NotBlank
-    @Column(name = "target_url", nullable = false, length = 2000)
+    @Column(name = "TARGET_URL", nullable = false, length = 2000)
     private String targetUrl;
 
-    @Column(nullable = false)
+    @Column(name = "ENABLED", nullable = false)
     private boolean enabled = true;
 
     @Min(0)
-    @Column(name = "sort_order", nullable = false)
+    @Column(name = "SORT_ORDER", nullable = false)
     private int sortOrder;
 
     public Long getId() {

@@ -186,25 +186,25 @@ At minimum, the database shall support the following conceptual entities.
 
 | Field | Description |
 | --- | --- |
-| `id` | Unique rule identifier. |
-| `name` | Human-readable rule name. |
-| `enabled` | Whether the rule is active. |
-| `sort_order` | Rule evaluation order. |
-| `match_type` | `REGEX` or `STARTS_WITH`. |
-| `url_pattern` | Regex pattern or URL prefix. |
-| `timeout_ms` | Downstream fanout timeout for this rule. Defaults to 60000. |
-| `created_at` | Creation timestamp. |
-| `updated_at` | Last update timestamp. |
+| `ID` | Unique rule identifier. |
+| `NAME` | Human-readable rule name. |
+| `ENABLED` | Whether the rule is active. |
+| `SORT_ORDER` | Rule evaluation order. |
+| `MATCH_TYPE` | `REGEX` or `STARTS_WITH`. |
+| `URL_PATTERN` | Regex pattern or URL prefix. |
+| `TIMEOUT_MS` | Downstream fanout timeout for this rule. Defaults to 60000. |
+| `CREATED_AT` | Creation timestamp. |
+| `UPDATED_AT` | Last update timestamp. |
 
 ### 5.2 Fanout Target
 
 | Field | Description |
 | --- | --- |
-| `id` | Unique target identifier. |
-| `rule_id` | Associated rule ID. |
-| `target_url` | Full downstream endpoint URL. |
-| `enabled` | Whether the target is active. |
-| `sort_order` | Target ordering used for fanout fallback response behavior. |
+| `ID` | Unique target identifier. |
+| `RULE_ID` | Associated rule ID. |
+| `TARGET_URL` | Full downstream endpoint URL. |
+| `ENABLED` | Whether the target is active. |
+| `SORT_ORDER` | Target ordering used for fanout fallback response behavior. |
 
 ## 6. Open Questions
 

@@ -21,41 +21,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "fanout_rule")
+@Table(name = "FANOUT_RULE")
 public class FanoutRule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private Long id;
 
     @NotBlank
-    @Column(nullable = false, length = 200)
+    @Column(name = "NAME", nullable = false, length = 200)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "ENABLED", nullable = false)
     private boolean enabled = true;
 
     @Min(0)
-    @Column(name = "sort_order", nullable = false)
+    @Column(name = "SORT_ORDER", nullable = false)
     private int sortOrder;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "match_type", nullable = false, length = 30)
+    @Column(name = "MATCH_TYPE", nullable = false, length = 30)
     private MatchType matchType = MatchType.STARTS_WITH;
 
     @NotBlank
-    @Column(name = "url_pattern", nullable = false, length = 2000)
+    @Column(name = "URL_PATTERN", nullable = false, length = 2000)
     private String urlPattern;
 
     @Min(1)
-    @Column(name = "timeout_ms", nullable = false)
+    @Column(name = "TIMEOUT_MS", nullable = false)
     private int timeoutMs = 60000;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "CREATED_AT", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "UPDATED_AT", nullable = false)
     private Instant updatedAt;
 
     @OneToMany(mappedBy = "rule", cascade = CascadeType.ALL, orphanRemoval = true)
