@@ -1,7 +1,7 @@
 package com.example.fanoutproxy.service;
 
 import com.example.fanoutproxy.domain.FanoutRule;
-import com.example.fanoutproxy.domain.FanoutTarget;
+import com.example.fanoutproxy.domain.FanoutRuleTarget;
 import com.example.fanoutproxy.repository.FanoutRuleRepository;
 import com.example.fanoutproxy.rules.RuleDefinition;
 import com.example.fanoutproxy.rules.TargetDefinition;
@@ -37,11 +37,16 @@ public class RuleSnapshotService {
     }
 
     private RuleDefinition toDefinition(FanoutRule rule) {
-        List<TargetDefinition> targets = rule.getTargets()
+        List<TargetDefinition> targets = rule.getRuleTargets()
                 .stream()
-                .filter(FanoutTarget::isEnabled)
-                .sorted(Comparator.comparingInt(FanoutTarget::getSortOrder).thenComparing(FanoutTarget::getId))
-                .map(target -> new TargetDefinition(target.getId(), target.getTargetUrl(), target.getSortOrder()))
+                .filter(FanoutRuleTarget::isEnabled)
+                .filter(target -> target.getTargetServer().isEnabled())
+                .sorted(Comparator.comparingInt(FanoutRuleTarget::getSortOrder).thenComparing(FanoutRuleTarget::getId))
+                .map(target -> new TargetDefinition(
+                        target.getId(),
+                        target.getTargetServer().getTargetUrl(),
+                        target.getSortOrder()
+                ))
                 .toList();
 
         return new RuleDefinition(

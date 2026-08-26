@@ -12,6 +12,17 @@ Java Spring Boot and Apache Camel fanout proxy server with an Oracle-backed rule
 - Caller response: first downstream HTTP `2xx`; if none succeed, response from the first configured target
 - Downstream retry: none
 - Default rule timeout: `60000` ms
+- Target servers are stored separately and assigned to rules through `FANOUT_RULE_TARGET`
+
+## Database
+
+The Oracle schema uses these main objects:
+
+- `FANOUT_RULE`
+- `TARGET_SERVER`
+- `FANOUT_RULE_TARGET`
+
+`TARGET_SERVER` stores reusable downstream server definitions. `FANOUT_RULE_TARGET` is the many-to-many relationship table and stores per-rule assignment state, including `ENABLED` and `SORT_ORDER`.
 
 ## Configuration
 

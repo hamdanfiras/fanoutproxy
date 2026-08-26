@@ -2,10 +2,12 @@ package com.example.fanoutproxy.service;
 
 import com.example.fanoutproxy.config.FanoutProperties;
 import com.example.fanoutproxy.domain.FanoutRule;
-import com.example.fanoutproxy.domain.FanoutTarget;
+import com.example.fanoutproxy.domain.FanoutRuleTarget;
 import com.example.fanoutproxy.domain.MatchType;
+import com.example.fanoutproxy.domain.TargetServer;
 import com.example.fanoutproxy.repository.FanoutRuleRepository;
-import com.example.fanoutproxy.repository.FanoutTargetRepository;
+import com.example.fanoutproxy.repository.FanoutRuleTargetRepository;
+import com.example.fanoutproxy.repository.TargetServerRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.net.URI;
 import java.util.Arrays;
@@ -19,18 +21,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class RuleAdminService {
 
     private final FanoutRuleRepository ruleRepository;
-    private final FanoutTargetRepository targetRepository;
+    private final FanoutRuleTargetRepository ruleTargetRepository;
+    private final TargetServerRepository targetServerRepository;
     private final RuleSnapshotService snapshotService;
     private final FanoutProperties properties;
 
     public RuleAdminService(
             FanoutRuleRepository ruleRepository,
-            FanoutTargetRepository targetRepository,
+            FanoutRuleTargetRepository ruleTargetRepository,
+            TargetServerRepository targetServerRepository,
             RuleSnapshotService snapshotService,
             FanoutProperties properties
     ) {
         this.ruleRepository = ruleRepository;
-        this.targetRepository = targetRepository;
+        this.ruleTargetRepository = ruleTargetRepository;
+        this.targetServerRepository = targetServerRepository;
         this.snapshotService = snapshotService;
         this.properties = properties;
     }
@@ -43,6 +48,16 @@ public class RuleAdminService {
     @Transactional(readOnly = true)
     public FanoutRule getRule(Long id) {
         return ruleRepository.findWithTargetsById(id).orElseThrow(() -> new EntityNotFoundException("Rule not found: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<TargetServer> allTargetServers() {
+        return targetServerRepository.findAllByOrderByNameAscIdAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public TargetServer getTargetServer(Long id) {
+        return targetServerRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Target server not found: " + id));
     }
 
     @Transactional
@@ -81,26 +96,49 @@ public class RuleAdminService {
     }
 
     @Transactional
-    public FanoutTarget saveTarget(Long ruleId, Long targetId, String targetUrl, boolean enabled, int sortOrder) {
+    public TargetServer saveTargetServer(Long id, String name, String targetUrl, boolean enabled) {
         validateTargetUrl(targetUrl);
 
-        FanoutRule rule = getRule(ruleId);
-        FanoutTarget target = targetId == null
-                ? new FanoutTarget()
-                : targetRepository.findById(targetId).orElseThrow(() -> new EntityNotFoundException("Target not found: " + targetId));
-        target.setRule(rule);
-        target.setTargetUrl(targetUrl);
-        target.setEnabled(enabled);
-        target.setSortOrder(sortOrder);
+        TargetServer targetServer = id == null
+                ? new TargetServer()
+                : targetServerRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Target server not found: " + id));
+        targetServer.setName(name);
+        targetServer.setTargetUrl(targetUrl);
+        targetServer.setEnabled(enabled);
 
-        FanoutTarget saved = targetRepository.save(target);
+        TargetServer saved = targetServerRepository.save(targetServer);
         snapshotService.refresh();
         return saved;
     }
 
     @Transactional
-    public void deleteTarget(Long targetId) {
-        targetRepository.deleteById(targetId);
+    public void deleteTargetServer(Long id) {
+        targetServerRepository.deleteById(id);
+        snapshotService.refresh();
+    }
+
+    @Transactional
+    public FanoutRuleTarget saveRuleTarget(Long ruleId, Long ruleTargetId, Long targetServerId, boolean enabled, int sortOrder) {
+        FanoutRule rule = getRule(ruleId);
+        TargetServer targetServer = getTargetServer(targetServerId);
+
+        FanoutRuleTarget ruleTarget = ruleTargetId == null
+                ? new FanoutRuleTarget()
+                : ruleTargetRepository.findById(ruleTargetId)
+                .orElseThrow(() -> new EntityNotFoundException("Rule target not found: " + ruleTargetId));
+        ruleTarget.setRule(rule);
+        ruleTarget.setTargetServer(targetServer);
+        ruleTarget.setEnabled(enabled);
+        ruleTarget.setSortOrder(sortOrder);
+
+        FanoutRuleTarget saved = ruleTargetRepository.save(ruleTarget);
+        snapshotService.refresh();
+        return saved;
+    }
+
+    @Transactional
+    public void deleteRuleTarget(Long ruleTargetId) {
+        ruleTargetRepository.deleteById(ruleTargetId);
         snapshotService.refresh();
     }
 
@@ -108,13 +146,13 @@ public class RuleAdminService {
     public void reorderTargets(Long ruleId, String orderedIds) {
         List<Long> ids = parseIds(orderedIds);
         for (int i = 0; i < ids.size(); i++) {
-            Long targetId = ids.get(i);
-            FanoutTarget target = targetRepository.findById(targetId)
-                    .orElseThrow(() -> new EntityNotFoundException("Target not found: " + targetId));
-            if (!target.getRule().getId().equals(ruleId)) {
-                throw new IllegalArgumentException("Target " + target.getId() + " does not belong to rule " + ruleId);
+            Long ruleTargetId = ids.get(i);
+            FanoutRuleTarget ruleTarget = ruleTargetRepository.findById(ruleTargetId)
+                    .orElseThrow(() -> new EntityNotFoundException("Rule target not found: " + ruleTargetId));
+            if (!ruleTarget.getRule().getId().equals(ruleId)) {
+                throw new IllegalArgumentException("Rule target " + ruleTarget.getId() + " does not belong to rule " + ruleId);
             }
-            target.setSortOrder(i);
+            ruleTarget.setSortOrder(i);
         }
         snapshotService.refresh();
     }
@@ -139,7 +177,12 @@ public class RuleAdminService {
         if (targetUrl == null || targetUrl.isBlank()) {
             throw new IllegalArgumentException("Target URL is required");
         }
-        URI uri = URI.create(targetUrl);
+        URI uri;
+        try {
+            uri = URI.create(targetUrl);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Target URL is invalid", ex);
+        }
         if (!"http".equalsIgnoreCase(uri.getScheme()) && !"https".equalsIgnoreCase(uri.getScheme())) {
             throw new IllegalArgumentException("Target URL must start with http:// or https://");
         }

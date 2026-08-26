@@ -71,10 +71,15 @@
         </div>
 
         <div class="list compact" id="targets-list" data-sortable>
-            <article class="target-row" draggable="true" th:each="target : ${rule.targets}" th:attr="data-id=${target.id}">
+            <article class="target-row" draggable="true" th:each="target : ${rule.ruleTargets}" th:attr="data-id=${target.id}">
                 <span class="handle" title="Drag to reorder">::</span>
                 <form class="inline-form" method="post" th:action="@{/admin/rules/{ruleId}/targets/{targetId}(ruleId=${rule.id}, targetId=${target.id})}">
-                    <input name="targetUrl" required maxlength="2000" th:value="${target.targetUrl}">
+                    <select name="targetServerId" required>
+                        <option th:each="targetServer : ${targetServers}"
+                                th:value="${targetServer.id}"
+                                th:selected="${targetServer.id == target.targetServer.id}"
+                                th:text="${targetServer.name + ' - ' + targetServer.targetUrl}">Target</option>
+                    </select>
                     <input name="sortOrder" type="hidden" th:value="${target.sortOrder}">
                     <label class="checkbox small">
                         <input name="enabled" type="checkbox" value="true" th:checked="${target.enabled}">
@@ -94,17 +99,22 @@
         </form>
 
         <form class="panel" method="post" th:action="@{/admin/rules/{id}/targets(id=${rule.id})}">
-            <h2>Add Target</h2>
+            <h2>Assign Target Server</h2>
             <label>
-                <span>Full Target URL</span>
-                <input name="targetUrl" required maxlength="2000" placeholder="https://service.example.com">
+                <span>Target Server</span>
+                <select name="targetServerId" required>
+                    <option value="">Select target server</option>
+                    <option th:each="targetServer : ${targetServers}"
+                            th:value="${targetServer.id}"
+                            th:text="${targetServer.name + ' - ' + targetServer.targetUrl}">Target</option>
+                </select>
             </label>
-            <input name="sortOrder" type="hidden" th:value="${#lists.size(rule.targets)}">
+            <input name="sortOrder" type="hidden" th:value="${#lists.size(rule.ruleTargets)}">
             <label class="checkbox">
                 <input name="enabled" type="checkbox" value="true" checked>
                 <span>Enabled</span>
             </label>
-            <button class="button primary" type="submit">Add Target</button>
+            <button class="button primary" type="submit">Assign Target</button>
         </form>
     </section>
 </main>

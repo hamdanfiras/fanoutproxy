@@ -35,6 +35,9 @@ The fanout server shall:
 ### 3.2 Rule Storage
 
 - Rules shall be persisted in a database.
+- Target servers shall be persisted in a separate database table.
+- Rules and target servers shall have a many-to-many relationship.
+- Rule-specific target ordering and enablement shall be stored on the rule-target relationship.
 - Each rule shall include:
   - A unique identifier.
   - A display name or description.
@@ -87,7 +90,8 @@ The fanout server shall:
 - Downstream timeout behavior shall be configurable per rule.
 - The default downstream timeout shall be 60 seconds.
 - The system shall not retry failed downstream calls.
-- Downstream targets shall be stored as full URLs to support targets inside or outside OpenShift.
+- Downstream target servers shall be stored as full URLs to support targets inside or outside OpenShift.
+- Target servers shall be reusable across multiple rules.
 
 ### 3.7 Database Access
 
@@ -101,7 +105,8 @@ The fanout server shall:
 
 - The system shall provide a web admin panel.
 - The web admin panel shall allow users to create, read, update, disable, and delete rules.
-- The web admin panel shall allow users to manage fanout targets for each rule.
+- The web admin panel shall allow users to create, read, update, disable, and delete target servers.
+- The web admin panel shall allow users to assign reusable target servers to each rule.
 - The web admin panel shall allow users to configure rule sort order using drag and drop.
 - The web admin panel shall allow users to configure fanout target sort order using drag and drop.
 - The web admin panel shall allow users to select the URL match type as either `REGEX` or `STARTS_WITH`.
@@ -196,15 +201,26 @@ At minimum, the database shall support the following conceptual entities.
 | `CREATED_AT` | Creation timestamp. |
 | `UPDATED_AT` | Last update timestamp. |
 
-### 5.2 Fanout Target
+### 5.2 Target Server
 
 | Field | Description |
 | --- | --- |
-| `ID` | Unique target identifier. |
-| `RULE_ID` | Associated rule ID. |
+| `ID` | Unique target server identifier. |
+| `NAME` | Human-readable target server name. |
 | `TARGET_URL` | Full downstream endpoint URL. |
-| `ENABLED` | Whether the target is active. |
-| `SORT_ORDER` | Target ordering used for fanout fallback response behavior. |
+| `ENABLED` | Whether the target server is active. |
+| `CREATED_AT` | Creation timestamp. |
+| `UPDATED_AT` | Last update timestamp. |
+
+### 5.3 Rule Target Assignment
+
+| Field | Description |
+| --- | --- |
+| `ID` | Unique rule-target assignment identifier. |
+| `RULE_ID` | Associated rule ID. |
+| `TARGET_SERVER_ID` | Associated target server ID. |
+| `ENABLED` | Whether this target server is active for this rule. |
+| `SORT_ORDER` | Per-rule target ordering used for fanout fallback response behavior. |
 
 ## 6. Open Questions
 
@@ -225,7 +241,7 @@ At minimum, the database shall support the following conceptual entities.
 - Matching requests return the first successful downstream response.
 - If all downstream targets fail, matching requests return the response from the first target in the fanout target list.
 - Requests with no matching rule return HTTP `503 Service Unavailable`.
-- Users can manage rules and fanout targets through the web admin panel without authentication or authorization.
+- Users can manage rules, target servers, and rule-target assignments through the web admin panel without authentication or authorization.
 - Users can reorder rules and fanout targets through drag and drop in the web admin panel.
 - Rule changes saved through the web admin panel take effect immediately.
 - Failed downstream target calls are not retried.

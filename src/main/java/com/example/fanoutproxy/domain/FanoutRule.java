@@ -61,7 +61,7 @@ public class FanoutRule {
 
     @OneToMany(mappedBy = "rule", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC, id ASC")
-    private List<FanoutTarget> targets = new ArrayList<>();
+    private List<FanoutRuleTarget> ruleTargets = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
@@ -139,11 +139,11 @@ public class FanoutRule {
         return updatedAt;
     }
 
-    public List<FanoutTarget> getTargets() {
-        return targets;
+    public List<FanoutRuleTarget> getRuleTargets() {
+        return ruleTargets;
     }
 
-    public void setTargets(List<FanoutTarget> targets) {
-        this.targets = targets;
+    public void setRuleTargets(List<FanoutRuleTarget> ruleTargets) {
+        this.ruleTargets = ruleTargets;
     }
 }

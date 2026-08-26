@@ -10,13 +10,13 @@ import org.springframework.data.repository.query.Param;
 
 public interface FanoutRuleRepository extends JpaRepository<FanoutRule, Long> {
 
-    @EntityGraph(attributePaths = "targets")
+    @EntityGraph(attributePaths = {"ruleTargets", "ruleTargets.targetServer"})
     List<FanoutRule> findAllByOrderBySortOrderAscIdAsc();
 
-    @EntityGraph(attributePaths = "targets")
+    @EntityGraph(attributePaths = {"ruleTargets", "ruleTargets.targetServer"})
     List<FanoutRule> findByEnabledTrueOrderBySortOrderAscIdAsc();
 
-    @EntityGraph(attributePaths = "targets")
+    @EntityGraph(attributePaths = {"ruleTargets", "ruleTargets.targetServer"})
     @Query("select r from FanoutRule r where r.id = :id")
     Optional<FanoutRule> findWithTargetsById(Long id);
 }

@@ -13,31 +13,55 @@
         <h1>Fanout Rules</h1>
         <p>Rules are evaluated from top to bottom. The first match wins.</p>
     </div>
-    <a class="button primary" th:href="@{/admin/rules/new}">New Rule</a>
+    <div class="top-actions">
+        <a class="button" th:href="@{/admin/targets/new}">New Target Server</a>
+        <a class="button primary" th:href="@{/admin/rules/new}">New Rule</a>
+    </div>
 </header>
 
 <main class="shell">
     <div th:replace="~{admin/fragments/messages :: messages}"></div>
 
-    <form method="post" th:action="@{/admin/rules/reorder}" data-reorder-form>
-        <input type="hidden" name="orderedIds" data-ordered-ids>
-        <div class="list" data-sortable>
-            <article class="row" draggable="true" th:each="rule : ${rules}" th:attr="data-id=${rule.id}">
-                <span class="handle" title="Drag to reorder">::</span>
-                <div class="grow">
-                    <a class="title" th:href="@{/admin/rules/{id}(id=${rule.id})}" th:text="${rule.name}">Rule</a>
-                    <div class="meta">
-                        <span th:text="${rule.matchType}">STARTS_WITH</span>
-                        <code th:text="${rule.urlPattern}">/api</code>
-                        <span th:text="${rule.enabled ? 'enabled' : 'disabled'}">enabled</span>
-                        <span th:text="${#lists.size(rule.targets)} + ' targets'">0 targets</span>
-                    </div>
+    <div class="two-column">
+        <section>
+            <h2>Rules</h2>
+            <form method="post" th:action="@{/admin/rules/reorder}" data-reorder-form>
+                <input type="hidden" name="orderedIds" data-ordered-ids>
+                <div class="list" data-sortable>
+                    <article class="row" draggable="true" th:each="rule : ${rules}" th:attr="data-id=${rule.id}">
+                        <span class="handle" title="Drag to reorder">::</span>
+                        <div class="grow">
+                            <a class="title" th:href="@{/admin/rules/{id}(id=${rule.id})}" th:text="${rule.name}">Rule</a>
+                            <div class="meta">
+                                <span th:text="${rule.matchType}">STARTS_WITH</span>
+                                <code th:text="${rule.urlPattern}">/api</code>
+                                <span th:text="${rule.enabled ? 'enabled' : 'disabled'}">enabled</span>
+                                <span th:text="${#lists.size(rule.ruleTargets)} + ' targets'">0 targets</span>
+                            </div>
+                        </div>
+                        <a class="button" th:href="@{/admin/rules/{id}(id=${rule.id})}">Edit</a>
+                    </article>
                 </div>
-                <a class="button" th:href="@{/admin/rules/{id}(id=${rule.id})}">Edit</a>
-            </article>
-        </div>
-        <button class="button" type="submit">Save Order</button>
-    </form>
+                <button class="button" type="submit">Save Rule Order</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Target Servers</h2>
+            <div class="list">
+                <article class="row" th:each="targetServer : ${targetServers}">
+                    <div class="grow">
+                        <a class="title" th:href="@{/admin/targets/{id}(id=${targetServer.id})}" th:text="${targetServer.name}">Target</a>
+                        <div class="meta">
+                            <code th:text="${targetServer.targetUrl}">https://service.example.com</code>
+                            <span th:text="${targetServer.enabled ? 'enabled' : 'disabled'}">enabled</span>
+                        </div>
+                    </div>
+                    <a class="button" th:href="@{/admin/targets/{id}(id=${targetServer.id})}">Edit</a>
+                </article>
+            </div>
+        </section>
+    </div>
 </main>
 </body>
 </html>

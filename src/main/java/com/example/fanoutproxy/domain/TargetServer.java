@@ -2,28 +2,27 @@ package com.example.fanoutproxy.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
 
 @Entity
-@Table(name = "FANOUT_TARGET")
-public class FanoutTarget {
+@Table(name = "TARGET_SERVER")
+public class TargetServer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "RULE_ID", nullable = false)
-    private FanoutRule rule;
+    @NotBlank
+    @Column(name = "NAME", nullable = false, length = 200)
+    private String name;
 
     @NotBlank
     @Column(name = "TARGET_URL", nullable = false, length = 2000)
@@ -32,9 +31,23 @@ public class FanoutTarget {
     @Column(name = "ENABLED", nullable = false)
     private boolean enabled = true;
 
-    @Min(0)
-    @Column(name = "SORT_ORDER", nullable = false)
-    private int sortOrder;
+    @Column(name = "CREATED_AT", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "UPDATED_AT", nullable = false)
+    private Instant updatedAt;
+
+    @PrePersist
+    void prePersist() {
+        Instant now = Instant.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = Instant.now();
+    }
 
     public Long getId() {
         return id;
@@ -44,12 +57,12 @@ public class FanoutTarget {
         this.id = id;
     }
 
-    public FanoutRule getRule() {
-        return rule;
+    public String getName() {
+        return name;
     }
 
-    public void setRule(FanoutRule rule) {
-        this.rule = rule;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getTargetUrl() {
@@ -68,11 +81,11 @@ public class FanoutTarget {
         this.enabled = enabled;
     }
 
-    public int getSortOrder() {
-        return sortOrder;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
-    public void setSortOrder(int sortOrder) {
-        this.sortOrder = sortOrder;
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 }

@@ -23,6 +23,7 @@ public class AdminController {
     @GetMapping({"/", "/admin"})
     public String index(Model model) {
         model.addAttribute("rules", adminService.allRules());
+        model.addAttribute("targetServers", adminService.allTargetServers());
         return "admin/index";
     }
 
@@ -33,6 +34,7 @@ public class AdminController {
         rule.setTimeoutMs(60000);
         model.addAttribute("rule", rule);
         model.addAttribute("matchTypes", MatchType.values());
+        model.addAttribute("targetServers", adminService.allTargetServers());
         model.addAttribute("action", "/admin/rules");
         return "admin/rules/form";
     }
@@ -41,8 +43,23 @@ public class AdminController {
     public String editRule(@PathVariable Long id, Model model) {
         model.addAttribute("rule", adminService.getRule(id));
         model.addAttribute("matchTypes", MatchType.values());
+        model.addAttribute("targetServers", adminService.allTargetServers());
         model.addAttribute("action", "/admin/rules/" + id);
         return "admin/rules/form";
+    }
+
+    @GetMapping("/admin/targets/new")
+    public String newTargetServer(Model model) {
+        model.addAttribute("targetServer", null);
+        model.addAttribute("action", "/admin/targets");
+        return "admin/targets/form";
+    }
+
+    @GetMapping("/admin/targets/{id}")
+    public String editTargetServer(@PathVariable Long id, Model model) {
+        model.addAttribute("targetServer", adminService.getTargetServer(id));
+        model.addAttribute("action", "/admin/targets/" + id);
+        return "admin/targets/form";
     }
 
     @PostMapping("/admin/rules")
@@ -99,49 +116,94 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    @PostMapping("/admin/targets")
+    public String createTargetServer(
+            @RequestParam String name,
+            @RequestParam String targetUrl,
+            @RequestParam(defaultValue = "false") boolean enabled,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            adminService.saveTargetServer(null, name, targetUrl, enabled);
+            redirectAttributes.addFlashAttribute("message", "Target server saved");
+            return "redirect:/admin";
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/admin/targets/new";
+        }
+    }
+
+    @PostMapping("/admin/targets/{id}")
+    public String updateTargetServer(
+            @PathVariable Long id,
+            @RequestParam String name,
+            @RequestParam String targetUrl,
+            @RequestParam(defaultValue = "false") boolean enabled,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            adminService.saveTargetServer(id, name, targetUrl, enabled);
+            redirectAttributes.addFlashAttribute("message", "Target server saved");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/admin/targets/" + id;
+    }
+
+    @PostMapping("/admin/targets/{id}/delete")
+    public String deleteTargetServer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            adminService.deleteTargetServer(id);
+            redirectAttributes.addFlashAttribute("message", "Target server deleted");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/admin";
+    }
+
     @PostMapping("/admin/rules/{ruleId}/targets")
     public String createTarget(
             @PathVariable Long ruleId,
-            @RequestParam String targetUrl,
+            @RequestParam Long targetServerId,
             @RequestParam(defaultValue = "false") boolean enabled,
             @RequestParam(defaultValue = "0") int sortOrder,
             RedirectAttributes redirectAttributes
     ) {
         try {
-            adminService.saveTarget(ruleId, null, targetUrl, enabled, sortOrder);
-            redirectAttributes.addFlashAttribute("message", "Target saved");
+            adminService.saveRuleTarget(ruleId, null, targetServerId, enabled, sortOrder);
+            redirectAttributes.addFlashAttribute("message", "Target assignment saved");
         } catch (RuntimeException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/admin/rules/" + ruleId;
     }
 
-    @PostMapping("/admin/rules/{ruleId}/targets/{targetId}")
+    @PostMapping("/admin/rules/{ruleId}/targets/{ruleTargetId}")
     public String updateTarget(
             @PathVariable Long ruleId,
-            @PathVariable Long targetId,
-            @RequestParam String targetUrl,
+            @PathVariable Long ruleTargetId,
+            @RequestParam Long targetServerId,
             @RequestParam(defaultValue = "false") boolean enabled,
             @RequestParam(defaultValue = "0") int sortOrder,
             RedirectAttributes redirectAttributes
     ) {
         try {
-            adminService.saveTarget(ruleId, targetId, targetUrl, enabled, sortOrder);
-            redirectAttributes.addFlashAttribute("message", "Target saved");
+            adminService.saveRuleTarget(ruleId, ruleTargetId, targetServerId, enabled, sortOrder);
+            redirectAttributes.addFlashAttribute("message", "Target assignment saved");
         } catch (RuntimeException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/admin/rules/" + ruleId;
     }
 
-    @PostMapping("/admin/rules/{ruleId}/targets/{targetId}/delete")
-    public String deleteTarget(
+    @PostMapping("/admin/rules/{ruleId}/targets/{ruleTargetId}/delete")
+    public String deleteRuleTarget(
             @PathVariable Long ruleId,
-            @PathVariable Long targetId,
+            @PathVariable Long ruleTargetId,
             RedirectAttributes redirectAttributes
     ) {
-        adminService.deleteTarget(targetId);
-        redirectAttributes.addFlashAttribute("message", "Target deleted");
+        adminService.deleteRuleTarget(ruleTargetId);
+        redirectAttributes.addFlashAttribute("message", "Target assignment deleted");
         return "redirect:/admin/rules/" + ruleId;
     }
 

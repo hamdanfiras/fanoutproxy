@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${targetServer == null ? 'New Target Server' : 'Edit Target Server'}">Target Server</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<header class="topbar">
+    <div>
+        <a class="back" th:href="@{/admin}">Admin</a>
+        <h1 th:text="${targetServer == null ? 'New Target Server' : targetServer.name}">Target Server</h1>
+    </div>
+</header>
+
+<main class="shell">
+    <div th:replace="~{admin/fragments/messages :: messages}"></div>
+
+    <form class="panel" method="post" th:action="${action}">
+        <label>
+            <span>Name</span>
+            <input name="name" required maxlength="200" th:value="${targetServer == null ? '' : targetServer.name}">
+        </label>
+
+        <label>
+            <span>Full Target URL</span>
+            <input name="targetUrl" required maxlength="2000" placeholder="https://service.example.com" th:value="${targetServer == null ? '' : targetServer.targetUrl}">
+        </label>
+
+        <label class="checkbox">
+            <input name="enabled" type="checkbox" value="true" th:checked="${targetServer == null || targetServer.enabled}">
+            <span>Enabled</span>
+        </label>
+
+        <div class="actions">
+            <button class="button primary" type="submit">Save Target Server</button>
+        </div>
+    </form>
+
+    <form class="delete-form" method="post" th:if="${targetServer != null}" th:action="@{/admin/targets/{id}/delete(id=${targetServer.id})}">
+        <button class="button danger" type="submit">Delete Target Server</button>
+    </form>
+</main>
+</body>
+</html>
