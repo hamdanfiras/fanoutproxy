@@ -160,6 +160,8 @@ The fanout server shall:
 - Sensitive headers and credentials shall not be logged.
 - The inbound proxy endpoint shall not require authentication or authorization.
 - The web admin panel shall not require authentication or authorization.
+- Downstream HTTPS calls shall ignore SSL certificate validation.
+- Downstream HTTPS calls shall ignore hostname verification.
 - Outbound target URLs shall be validated to reduce the risk of server-side request forgery.
 
 ### 4.4 Reliability

@@ -13,6 +13,7 @@ Java Spring Boot and Apache Camel fanout proxy server with an Oracle-backed rule
 - Downstream retry: none
 - Default rule timeout: `60000` ms
 - Target servers are stored separately and assigned to rules through `FANOUT_RULE_TARGET`
+- Downstream HTTPS certificate validation and hostname verification are disabled
 
 ## Database
 
