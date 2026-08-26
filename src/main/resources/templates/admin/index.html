@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fanout Rules</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script defer th:src="@{/js/admin.js}"></script>
+</head>
+<body>
+<header class="topbar">
+    <div>
+        <h1>Fanout Rules</h1>
+        <p>Rules are evaluated from top to bottom. The first match wins.</p>
+    </div>
+    <a class="button primary" th:href="@{/admin/rules/new}">New Rule</a>
+</header>
+
+<main class="shell">
+    <div th:replace="~{admin/fragments/messages :: messages}"></div>
+
+    <form method="post" th:action="@{/admin/rules/reorder}" data-reorder-form>
+        <input type="hidden" name="orderedIds" data-ordered-ids>
+        <div class="list" data-sortable>
+            <article class="row" draggable="true" th:each="rule : ${rules}" th:attr="data-id=${rule.id}">
+                <span class="handle" title="Drag to reorder">::</span>
+                <div class="grow">
+                    <a class="title" th:href="@{/admin/rules/{id}(id=${rule.id})}" th:text="${rule.name}">Rule</a>
+                    <div class="meta">
+                        <span th:text="${rule.matchType}">STARTS_WITH</span>
+                        <code th:text="${rule.urlPattern}">/api</code>
+                        <span th:text="${rule.enabled ? 'enabled' : 'disabled'}">enabled</span>
+                        <span th:text="${#lists.size(rule.targets)} + ' targets'">0 targets</span>
+                    </div>
+                </div>
+                <a class="button" th:href="@{/admin/rules/{id}(id=${rule.id})}">Edit</a>
+            </article>
+        </div>
+        <button class="button" type="submit">Save Order</button>
+    </form>
+</main>
+</body>
+</html>

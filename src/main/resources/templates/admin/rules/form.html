@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${rule.id == null ? 'New Rule' : 'Edit Rule'}">Rule</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script defer th:src="@{/js/admin.js}"></script>
+</head>
+<body>
+<header class="topbar">
+    <div>
+        <a class="back" th:href="@{/admin}">Rules</a>
+        <h1 th:text="${rule.id == null ? 'New Rule' : rule.name}">Rule</h1>
+    </div>
+</header>
+
+<main class="shell two-column">
+    <section>
+        <div th:replace="~{admin/fragments/messages :: messages}"></div>
+
+        <form class="panel" method="post" th:action="${action}">
+            <label>
+                <span>Name</span>
+                <input name="name" required maxlength="200" th:value="${rule.name}">
+            </label>
+
+            <label>
+                <span>Match Type</span>
+                <select name="matchType" required>
+                    <option th:each="type : ${matchTypes}"
+                            th:value="${type}"
+                            th:selected="${type == rule.matchType}"
+                            th:text="${type}">STARTS_WITH</option>
+                </select>
+            </label>
+
+            <label>
+                <span>URL Pattern</span>
+                <input name="urlPattern" required maxlength="2000" th:value="${rule.urlPattern}" placeholder="/api/orders">
+            </label>
+
+            <label>
+                <span>Timeout Milliseconds</span>
+                <input name="timeoutMs" type="number" min="1" required th:value="${rule.timeoutMs}">
+            </label>
+
+            <label>
+                <span>Sort Order</span>
+                <input name="sortOrder" type="number" min="0" required th:value="${rule.sortOrder}">
+            </label>
+
+            <label class="checkbox">
+                <input name="enabled" type="checkbox" value="true" th:checked="${rule.enabled}">
+                <span>Enabled</span>
+            </label>
+
+            <div class="actions">
+                <button class="button primary" type="submit">Save Rule</button>
+            </div>
+        </form>
+
+        <form class="delete-form" method="post" th:if="${rule.id != null}" th:action="@{/admin/rules/{id}/delete(id=${rule.id})}">
+            <button class="button danger" type="submit">Delete Rule</button>
+        </form>
+    </section>
+
+    <section th:if="${rule.id != null}">
+        <div class="section-heading">
+            <h2>Fanout Targets</h2>
+        </div>
+
+        <div class="list compact" id="targets-list" data-sortable>
+            <article class="target-row" draggable="true" th:each="target : ${rule.targets}" th:attr="data-id=${target.id}">
+                <span class="handle" title="Drag to reorder">::</span>
+                <form class="inline-form" method="post" th:action="@{/admin/rules/{ruleId}/targets/{targetId}(ruleId=${rule.id}, targetId=${target.id})}">
+                    <input name="targetUrl" required maxlength="2000" th:value="${target.targetUrl}">
+                    <input name="sortOrder" type="hidden" th:value="${target.sortOrder}">
+                    <label class="checkbox small">
+                        <input name="enabled" type="checkbox" value="true" th:checked="${target.enabled}">
+                        <span>Enabled</span>
+                    </label>
+                    <button class="button" type="submit">Save</button>
+                </form>
+                <form method="post" th:action="@{/admin/rules/{ruleId}/targets/{targetId}/delete(ruleId=${rule.id}, targetId=${target.id})}">
+                    <button class="button danger" type="submit">Delete</button>
+                </form>
+            </article>
+        </div>
+
+        <form method="post" th:action="@{/admin/rules/{id}/targets/reorder(id=${rule.id})}" data-reorder-form data-reorder-source="targets-list">
+            <input type="hidden" name="orderedIds" data-ordered-ids>
+            <button class="button" type="submit">Save Target Order</button>
+        </form>
+
+        <form class="panel" method="post" th:action="@{/admin/rules/{id}/targets(id=${rule.id})}">
+            <h2>Add Target</h2>
+            <label>
+                <span>Full Target URL</span>
+                <input name="targetUrl" required maxlength="2000" placeholder="https://service.example.com">
+            </label>
+            <input name="sortOrder" type="hidden" th:value="${#lists.size(rule.targets)}">
+            <label class="checkbox">
+                <input name="enabled" type="checkbox" value="true" checked>
+                <span>Enabled</span>
+            </label>
+            <button class="button primary" type="submit">Add Target</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>
