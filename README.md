@@ -17,6 +17,8 @@ Java Spring Boot and Apache Camel fanout proxy server with an Oracle-backed rule
 
 ## Database
 
+The application does not run DDL automatically. Run [db/schema.sql](db/schema.sql) manually on the Oracle schema before starting the service.
+
 The Oracle schema uses these main objects:
 
 - `FANOUT_RULE`

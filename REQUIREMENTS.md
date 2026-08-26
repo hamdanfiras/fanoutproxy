@@ -98,6 +98,8 @@ The fanout server shall:
 
 - The service shall use a database connection configured through OpenShift environment variables or mounted secrets.
 - The database shall be Oracle.
+- Database DDL shall be run manually before application startup.
+- The application shall not run Flyway or any other automatic schema migration tool.
 - Database credentials shall not be hard-coded.
 - The application shall validate database connectivity during startup or readiness checks.
 - The application shall handle temporary database failures gracefully.
