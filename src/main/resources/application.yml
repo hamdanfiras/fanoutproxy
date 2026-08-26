@@ -34,5 +34,4 @@ camel:
     name: fanoutproxy
 
 fanout:
-  proxy-prefix: /proxy
   default-timeout-ms: 60000

@@ -12,25 +12,22 @@ import org.apache.camel.ProducerTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.HandlerMapping;
 
 @RestController
 public class ProxyController {
 
     private final RuleEngine ruleEngine;
     private final ProducerTemplate producerTemplate;
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public ProxyController(RuleEngine ruleEngine, ProducerTemplate producerTemplate) {
         this.ruleEngine = ruleEngine;
         this.producerTemplate = producerTemplate;
     }
 
-    @RequestMapping("${fanout.proxy-prefix:/proxy}/**")
+    @RequestMapping("/**")
     public ResponseEntity<byte[]> proxy(HttpServletRequest servletRequest, @RequestBody(required = false) byte[] body) {
         ProxyRequest request = toProxyRequest(servletRequest, body == null ? new byte[0] : body);
         RuleDefinition rule = ruleEngine.firstMatch(request).orElse(null);
@@ -50,7 +47,7 @@ public class ProxyController {
     }
 
     private ProxyRequest toProxyRequest(HttpServletRequest servletRequest, byte[] body) {
-        String path = pathAfterProxyPrefix(servletRequest);
+        String path = requestPath(servletRequest);
         return new ProxyRequest(
                 servletRequest.getMethod(),
                 path,
@@ -60,11 +57,13 @@ public class ProxyController {
         );
     }
 
-    private String pathAfterProxyPrefix(HttpServletRequest servletRequest) {
-        String pattern = String.valueOf(servletRequest.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE));
-        String pathWithinMapping = String.valueOf(servletRequest.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE));
-        String extracted = pathMatcher.extractPathWithinPattern(pattern, pathWithinMapping);
-        return extracted == null || extracted.isBlank() ? "/" : "/" + extracted;
+    private String requestPath(HttpServletRequest servletRequest) {
+        String requestUri = servletRequest.getRequestURI();
+        String contextPath = servletRequest.getContextPath();
+        if (contextPath != null && !contextPath.isBlank() && requestUri.startsWith(contextPath)) {
+            requestUri = requestUri.substring(contextPath.length());
+        }
+        return requestUri == null || requestUri.isBlank() ? "/" : requestUri;
     }
 
     private Map<String, List<String>> headers(HttpServletRequest servletRequest) {

@@ -5,8 +5,8 @@ Java Spring Boot and Apache Camel fanout proxy server with an Oracle-backed rule
 ## Runtime
 
 - Admin panel: `GET /admin`
-- Proxy endpoint: `/proxy/**`
-- Rule matching uses the path after `/proxy`. For example, `/proxy/api/orders/1` matches rules against `/api/orders/1`.
+- Proxy endpoint: `/**`
+- Rule matching uses the request path. For example, `/api/orders/1` matches rules against `/api/orders/1`.
 - No-match response: HTTP `503 Service Unavailable`
 - Fanout dispatch: async and concurrent
 - Caller response: first downstream HTTP `2xx`; if none succeed, response from the first configured target
@@ -32,7 +32,6 @@ Set these environment variables in OpenShift:
 DB_URL=jdbc:oracle:thin:@//oracle-host:1521/service
 DB_USERNAME=fanout
 DB_PASSWORD=...
-FANOUT_PROXY_PREFIX=/proxy
 ```
 
 ## Build

@@ -20,7 +20,7 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @GetMapping({"/", "/admin"})
+    @GetMapping("/admin")
     public String index(Model model) {
         model.addAttribute("rules", adminService.allRules());
         model.addAttribute("targetServers", adminService.allTargetServers());

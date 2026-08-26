@@ -37,8 +37,6 @@ spec:
                 secretKeyRef:
                   name: fanoutproxy-db
                   key: password
-            - name: FANOUT_PROXY_PREFIX
-              value: /proxy
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness

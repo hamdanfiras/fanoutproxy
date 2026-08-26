@@ -26,6 +26,7 @@ The fanout server shall:
 ### 3.1 HTTP Ingress
 
 - The server shall expose an HTTP endpoint for receiving requests.
+- The proxy endpoint shall be `/**` without a path prefix.
 - The inbound proxy endpoint shall be open and shall not require authentication or authorization.
 - The server shall preserve the full HTTP request when forwarding, except for replacing the original base URL with the configured downstream target base URL.
 - The server shall preserve the request method, path, query parameters, headers, and body when forwarding.
